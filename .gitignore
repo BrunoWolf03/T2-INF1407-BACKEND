@@ -1,7 +1,5 @@
-target/
-*.iml
-.idea/
-*.log
-logs/
-*.class
-.DS_Store
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.env
