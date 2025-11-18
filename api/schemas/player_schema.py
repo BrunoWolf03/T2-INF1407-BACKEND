@@ -1,9 +1,11 @@
 from pydantic import BaseModel
 
 class PlayerSchema(BaseModel):
-    id: int | None = None
+    id: int
     name: str
-    score: float
+    position: str
+    team: str
+    score: int
 
     class Config:
         orm_mode = True

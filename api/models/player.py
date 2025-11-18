@@ -5,7 +5,7 @@ class Player(Base):
     __tablename__ = "players"
 
     id = Column(Integer, primary_key=True)
-    first_name = Column(String)
-    last_name = Column(String)
+    name = Column(String)
     position = Column(String)
     team = Column(String)
+    score = Column(Integer)
