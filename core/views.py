@@ -2,6 +2,8 @@
 Main Views for NBA Fantasy Game API
 Handles players, teams, leaderboard, and dashboard
 """
+import os
+import requests
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -10,6 +12,7 @@ from django.db.models import Q
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from decimal import Decimal
 from .models import User, Player, UserTeam, UserTeamPlayer, League
+from .permissions import IsAdminOrSuperuser
 from .serializers import (
     PlayerSerializer,
     UserTeamSerializer,
@@ -414,3 +417,144 @@ def dashboard_stats(request):
 
     serializer = DashboardStatsSerializer(stats)
     return Response(serializer.data)
+
+
+
+@extend_schema(
+    responses={
+        200: OpenApiResponse(description="Players fetched and saved successfully"),
+        401: OpenApiResponse(description="Unauthorized - Admin only"),
+        500: OpenApiResponse(description="API error or server error")
+    },
+    tags=['Admin']
+)
+@api_view(['GET'])
+@permission_classes([IsAdminOrSuperuser])
+def fetch_balldontlie_api(request):
+    """
+    Fetch latest NBA players from Balldontlie API and update database
+    Only accessible by admin users (staff or superuser)
+    """
+    # Get API key from environment
+    api_key = os.environ.get('BALLDONTLIE_API_KEY')
+    if not api_key:
+        return Response(
+            {'error': 'BALLDONTLIE_API_KEY not configured in environment'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    # API endpoint for active players
+    url = "https://api.balldontlie.io/v1/players"
+    headers = {
+        'Authorization': api_key
+    }
+
+    params = {
+        'per_page': 100  # <= PEGAR 100 JOGADORES!
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=30)
+
+        if response.status_code != 200:
+            return Response(
+                {
+                    'error': f'API returned status {response.status_code}',
+                    'detail': response.text
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        data = response.json()
+        players_data = data.get('data', [])
+
+        if not players_data:
+            return Response(
+                {'error': 'No players data received from API'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        created_count = 0
+        updated_count = 0
+        skipped_count = 0
+
+        position_map = {
+            'G': 'PG',
+            'G-F': 'SG',
+            'F': 'SF',
+            'F-C': 'PF',
+            'C': 'C',
+            'C-F': 'PF',
+            'F-G': 'SF',
+        }
+
+        for player_data in players_data:
+            try:
+                # Extract player info
+                first_name = player_data.get('first_name', '')
+                last_name = player_data.get('last_name', '')
+                full_name = f"{first_name} {last_name}".strip()
+
+                if not full_name:
+                    skipped_count += 1
+                    continue
+
+                # Get position & team
+                api_position = player_data.get('position', 'G')
+                position_short = position_map.get(api_position, 'PG')
+                team_name = player_data.get('team', {}).get('full_name', 'Free Agent')
+
+                # NBA official ID (Do API!)
+                nba_id = player_data.get('id')
+
+                # Foto da CDN — SEM PRECISAR BUSCAR DE NOVO NA API 🎯
+                photo_url = f"https://cdn.nba.com/headshots/nba/latest/1040x760/{nba_id}.png"
+
+                # Create/update
+                player, created = Player.objects.get_or_create(
+                    name=full_name,
+                    defaults={
+                        'position': api_position or 'Guard',
+                        'position_short': position_short,
+                        'team': team_name,
+                        'price': Decimal('5.0'),
+                        'points': 0,
+                        'stats_points': Decimal('0.0'),
+                        'stats_rebounds': Decimal('0.0'),
+                        'stats_assists': Decimal('0.0'),
+                        'stats_steals': Decimal('0.0'),
+                        'stats_blocks': Decimal('0.0'),
+                        'photo': photo_url,      # <= FOTO AUTOMÁTICA
+                        'nba_id': nba_id,        # <= PRECISA existir no model!
+                    }
+                )
+
+                if not created:
+                    player.position = api_position or 'Guard'
+                    player.position_short = position_short
+                    player.team = team_name
+                    player.photo = photo_url  # <= Atualiza se faltava
+                    player.nba_id = nba_id
+                    player.save()
+                    updated_count += 1
+                else:
+                    created_count += 1
+
+            except Exception:
+                skipped_count += 1
+                continue
+
+        return Response({
+            'message': 'Players fetched successfully',
+            'stats': {
+                'total_fetched': len(players_data),
+                'created': created_count,
+                'updated': updated_count,
+                'skipped': skipped_count
+            }
+        }, status=status.HTTP_200_OK)
+
+    except requests.exceptions.RequestException as e:
+        return Response({'error': f'Failed to connect to API: {str(e)}'}, status=500)
+    except Exception as e:
+        return Response({'error': f'Unexpected error: {str(e)}'}, status=500)

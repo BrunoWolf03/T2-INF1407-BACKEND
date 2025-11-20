@@ -46,6 +46,11 @@ urlpatterns = [
     path('dashboard/stats', views.dashboard_stats, name='dashboard-stats'),
 
     # ===========================
+    # Admin Endpoints
+    # ===========================
+    path('admin/fetch-players', views.fetch_balldontlie_api, name='admin-fetch-players'),
+
+    # ===========================
     # Router URLs (includes players viewset)
     # ===========================
     path('', include(router.urls)),
