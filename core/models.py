@@ -59,6 +59,13 @@ class Player(models.Model):
     )
     team = models.CharField(max_length=100, help_text="NBA team name")
 
+    nba_id = models.IntegerField(null=True, blank=True, help_text="Official NBA ID")  # ⭐ NOVO CAMPO
+    photo = models.URLField(
+        blank=True,
+        default="https://via.placeholder.com/150",
+        help_text="URL to player photo"
+    )
+
     # Fantasy data
     price = models.DecimalField(
         max_digits=5,

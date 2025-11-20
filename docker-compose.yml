@@ -43,6 +43,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+      - BALLDONTLIE_API_KEY=ea1aa7ca-f1f0-4464-a153-77af1a5f9e3d
     depends_on:
       db:
         condition: service_healthy
