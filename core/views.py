@@ -4,6 +4,7 @@ Handles players, teams, leaderboard, and dashboard
 """
 import os
 import requests
+import json
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -23,6 +24,8 @@ from .serializers import (
     LeaderboardEntrySerializer,
     DashboardStatsSerializer
 )
+import subprocess
+
 
 
 # ===========================
@@ -96,6 +99,42 @@ class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
     def retrieve(self, request, pk=None):
         """Get single player details"""
         return super().retrieve(request, pk)
+    
+
+@api_view(["POST"])
+def update_player_points(request):
+    name = request.data.get("name")
+
+    # 🟦 1. Rodar o script calculate_scores.js
+    try:
+        result = subprocess.run(
+            ["node", "scripts/calculate_scores.js", name],  # envia o nome como argumento
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            return Response({"error": "erro no script js", "detail": result.stderr}, status=500)
+
+        # resposta JSON do JS
+        data = json.loads(result.stdout)
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+    # 🟦 2. Atualizar no Django
+    player = Player.objects.filter(name__icontains=name).first()
+    if not player:
+        return Response({"error": "player not found"}, status=404)
+
+    player.fantasy_points = data["fantasy_points"]
+    player.save()
+
+    return Response({
+        "message": "updated",
+        "player": player.name,
+        "points": player.fantasy_points
+    })
 
 
 # ===========================
