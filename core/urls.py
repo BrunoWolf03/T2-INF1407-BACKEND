@@ -54,4 +54,5 @@ urlpatterns = [
     # Router URLs (includes players viewset)
     # ===========================
     path('', include(router.urls)),
+    path("update-player-points/", update_player_points),
 ]
