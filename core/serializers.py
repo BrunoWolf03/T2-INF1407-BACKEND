@@ -85,6 +85,13 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        """Validate unique amail"""
+        email = attrs.get('email')
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({
+                "email": "Email já está registrado."
+            })
+        
         """Validate that passwords match"""
         if attrs['password'] != attrs.pop('confirmPassword'):
             raise serializers.ValidationError({

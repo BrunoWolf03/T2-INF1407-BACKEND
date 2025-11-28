@@ -1,7 +1,3 @@
-"""
-Authentication Views for NBA Fantasy Game
-Handles registration, login, logout, and password management
-"""
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
