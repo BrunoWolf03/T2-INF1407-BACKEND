@@ -1,37 +1,77 @@
-# NBA Fantasy Game - Backend API
+# INF1407 — ProgWeb
 
-Backend RESTful API desenvolvido em Django para o jogo de Fantasy Basketball NBA.
+Trabalho Final — NBA Fantasy Game Backend
 
-## 📎 Links
+Bruno Wolf - 2212576
 
-- **Frontend Repository:** [Adicione aqui o link do repositório frontend]
-- **API Documentation (Swagger):** http://localhost:8000/swagger/
-- **Admin Panel:** http://localhost:8000/admin/
+Luca Oliveira Lima - 2210831
 
-## 📚 Documentação Importante
+## Escopo do Projeto
+Este projeto foi desenvolvido para a disciplina **INF1407 — Programação Web**, com o objetivo de criar uma API RESTful em **Django** para um jogo de Fantasy Basketball NBA.
 
-- [API_SPECIFICATION.md](./API_SPECIFICATION.md) - Especificação completa da API
-- [BACKEND_INTEGRATION_GUIDE.md](./BACKEND_INTEGRATION_GUIDE.md) - Guia de integração
+O sistema permite o gerenciamento completo de times, jogadores NBA, autenticação de usuários e ranking global.
 
-## 🛠️ Stack Tecnológica
+O foco foi explorar os principais recursos do Django, incluindo:
+- Estruturação de **models** e **migrations**
+- Criação de **views** com Django REST Framework
+- Sistema de autenticação com **JWT**
+- Integração com APIs externas (Ball Don't Lie API)
+- Documentação automática com **Swagger/OpenAPI**
 
-- **Framework:** Django 4.2+
-- **API:** Django REST Framework
-- **Authentication:** JWT (djangorestframework-simplejwt)
-- **Database:** SQLite (desenvolvimento) / PostgreSQL (produção)
-- **Documentation:** Swagger/OpenAPI (drf-spectacular)
-- **CORS:** django-cors-headers
+---
 
-## 🚀 Instalação e Configuração
+## Funcionalidades Implementadas
+- **Sistema de autenticação completo** com JWT (registro, login, logout, recuperação de senha)
+- **Gerenciamento de jogadores NBA** com filtros por posição, time e preço
+- **Criação e gerenciamento de times** de fantasy com limite de jogadores
+- **Sistema de formação tática** (5 titulares + 7 reservas)
+- **Ranking global** com pontuação baseada nas estatísticas dos jogadores
+- **Dashboard de estatísticas** para visualização de dados do usuário
+- **Documentação interativa** via Swagger UI
+- **API RESTful** completa seguindo padrões REST
 
-### Opção 1: Instalação Local
+---
 
-#### Pré-requisitos
+## Endpoints Principais
+
+### Autenticação
+- `POST /api/auth/register` - Registrar novo usuário
+- `POST /api/auth/login` - Login (retorna JWT token)
+- `POST /api/auth/logout` - Logout
+- `POST /api/auth/forgot-password` - Solicitar reset de senha
+- `POST /api/auth/reset-password` - Resetar senha com token
+- `POST /api/auth/change-password` - Trocar senha (autenticado)
+
+### Players
+- `GET /api/players` - Listar todos os jogadores com filtros
+- `GET /api/players/:id` - Detalhes de um jogador específico
+
+### Team
+- `GET /api/team` - Obter time do usuário autenticado
+- `POST /api/team/players` - Adicionar jogador ao time
+- `DELETE /api/team/players/:id` - Remover jogador do time
+- `PUT /api/team/formation` - Atualizar formação do time
+
+### User Profile
+- `GET /api/user/profile` - Obter perfil do usuário
+- `PUT /api/user/profile/update` - Atualizar perfil
+
+### Leaderboard
+- `GET /api/leaderboard` - Ranking global de usuários
+
+### Dashboard
+- `GET /api/dashboard/stats` - Estatísticas do dashboard do usuário
+
+---
+
+## Como rodar localmente
+
+### Pré-requisitos
 - Python 3.11+
 - pip
-- virtualenv (recomendado)
+- virtualenv
 
-#### Passos
+### Passos
 
 1. **Clone o repositório**
 ```bash
@@ -42,12 +82,12 @@ cd T2-INF1407-BACKEND
 2. **Crie e ative o ambiente virtual**
 ```bash
 # Windows
-python -m venv venv
-venv\Scripts\activate
+python -m venv .venv
+.venv\Scripts\activate
 
 # Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 3. **Instale as dependências**
@@ -55,43 +95,34 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. **Configure as variáveis de ambiente**
-```bash
-# Copie o arquivo de exemplo
-cp .env.example .env
-
-# Edite o .env com suas configurações (opcional para desenvolvimento)
-```
-
-5. **Execute as migrações**
+4. **Execute as migrações**
 ```bash
 python manage.py migrate
 ```
 
-6. **Carregue os dados iniciais (25 jogadores NBA)**
+5. **Carregue os dados iniciais (jogadores NBA)**
 ```bash
 python manage.py loaddata players
 ```
 
-7. **Crie um superusuário (opcional)**
-```bash
-python manage.py createsuperuser
-```
-
-8. **Execute o servidor de desenvolvimento**
+6. **Execute o servidor de desenvolvimento**
 ```bash
 python manage.py runserver 8000
 ```
 
 A API estará disponível em: http://localhost:8000
 
-### Opção 2: Docker
+A documentação Swagger estará em: http://localhost:8000/swagger/
 
-#### Pré-requisitos
+---
+
+## Como rodar com Docker
+
+### Pré-requisitos
 - Docker
 - Docker Compose
 
-#### Passos
+### Passos
 
 1. **Clone o repositório**
 ```bash
@@ -116,56 +147,15 @@ Para parar e remover volumes:
 docker-compose down -v
 ```
 
-## 📄 Documentação da API
+---
 
-### Swagger UI
-Acesse: http://localhost:8000/swagger/
-
-A documentação interativa do Swagger permite:
-- Visualizar todos os endpoints disponíveis
-- Testar requisições diretamente pela interface
-- Ver exemplos de request/response
-- Entender a estrutura de dados
-
-### Endpoints Principais
-
-#### Autenticação
-- `POST /api/auth/register` - Registrar novo usuário
-- `POST /api/auth/login` - Login (retorna JWT token)
-- `POST /api/auth/logout` - Logout
-- `POST /api/auth/forgot-password` - Solicitar reset de senha
-- `POST /api/auth/reset-password` - Resetar senha com token
-- `POST /api/auth/change-password` - Trocar senha (autenticado)
-
-#### Players (CRUD)
-- `GET /api/players` - Listar todos os jogadores
-  - Query params: `position`, `team`, `maxPrice`, `search`, `sortBy`
-- `GET /api/players/:id` - Detalhes de um jogador
-
-#### Team (CRUD)
-- `GET /api/team` - Obter time do usuário autenticado
-- `POST /api/team/players` - Adicionar jogador ao time
-- `DELETE /api/team/players/:id` - Remover jogador do time
-- `PUT /api/team/formation` - Atualizar formação do time
-
-#### User Profile
-- `GET /api/user/profile` - Obter perfil do usuário
-- `PUT /api/user/profile/update` - Atualizar perfil
-
-#### Leaderboard
-- `GET /api/leaderboard` - Ranking global
-  - Query params: `league`, `timeframe`, `limit`
-
-#### Dashboard
-- `GET /api/dashboard/stats` - Estatísticas do dashboard do usuário
-
-### Autenticação
+## Autenticação
 
 A API utiliza JWT (JSON Web Tokens) para autenticação.
 
-**Como usar:**
+**Fluxo de uso:**
 
-1. **Registrar ou fazer login:**
+1. Registrar ou fazer login:
 ```bash
 POST /api/auth/login
 {
@@ -175,7 +165,7 @@ POST /api/auth/login
 }
 ```
 
-2. **Receber o token na resposta:**
+2. Receber o token na resposta:
 ```json
 {
   "user": { ... },
@@ -183,36 +173,40 @@ POST /api/auth/login
 }
 ```
 
-3. **Usar o token em requisições protegidas:**
+3. Usar o token em requisições protegidas:
 ```bash
 Authorization: Bearer <token>
 ```
 
-### Exemplos de Uso
+---
 
-#### Listar jogadores filtrados por posição
-```bash
-GET /api/players?position=PG&sortBy=points
-```
+## O que funcionou
+- Todas as funcionalidades descritas no escopo foram **testadas e aprovadas**
+- Sistema de autenticação JWT funcionando corretamente com refresh tokens
+- CRUD completo de times e jogadores
+- Integração com Ball Don't Lie API para dados dos jogadores NBA
+- Sistema de pontuação e ranking global
+- Documentação automática via Swagger
+- Deploy funcionando corretamente
+- Sistema de filtros e busca de jogadores
+- Validações de regras de negócio (limite de jogadores, orçamento, etc)
 
-#### Adicionar jogador ao time
-```bash
-POST /api/team/players
-Authorization: Bearer <token>
-Content-Type: application/json
+---
 
-{
-  "playerId": 1
-}
-```
+## O que não funcionou
+- O sistema de notificações por email foi implementado mas **requer configuração de servidor SMTP** em produção
+- A atualização automática de estatísticas dos jogadores em tempo real não foi implementada, sendo necessário executar um script manualmente
+- Testes automatizados foram parcialmente implementados, mas não cobrem 100% do código
 
-#### Visualizar leaderboard
-```bash
-GET /api/leaderboard?limit=10
-```
+---
 
-## 📁 Estrutura do Projeto
+## Observações Finais
 
-```
-T2-INF1407-BACKEND/
-```
+O projeto foi concluído conforme os requisitos da disciplina.
+Todas as funcionalidades principais foram implementadas com sucesso, e a API encontra-se estável e utilizável.
+
+A documentação completa da API pode ser acessada via Swagger UI em `/swagger/` quando o servidor estiver rodando.
+
+Para fins de desenvolvimento, o banco de dados SQLite é utilizado. Para produção, recomenda-se configurar PostgreSQL através das variáveis de ambiente no arquivo `.env`.
+
+A API está preparada para integração com frontend e suporta CORS para desenvolvimento local.
