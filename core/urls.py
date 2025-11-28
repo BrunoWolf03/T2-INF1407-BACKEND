@@ -50,9 +50,4 @@ urlpatterns = [
     # ===========================
     path('admin/fetch-players', views.fetch_balldontlie_api, name='admin-fetch-players'),
 
-    # ===========================
-    # Router URLs (includes players viewset)
-    # ===========================
-    path('', include(router.urls)),
-    path("update-player-points/", update_player_points),
 ]

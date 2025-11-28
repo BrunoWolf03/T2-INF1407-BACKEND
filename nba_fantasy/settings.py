@@ -24,6 +24,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://localhost:8000",
     "http://localhost:8000",
     "https://trucsite.pythonanywhere.com",
+    "https://t2-inf-1407-frontend.vercel.app",
 ]
 # ===========================
 # INSTALLED APPS
@@ -162,11 +163,10 @@ AUTH_USER_MODEL = 'core.User'
 # ===========================
 # CORS SETTINGS
 # ===========================
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=Csv()
-)
+CORS_ALLOWED_ORIGINS = [
+    "https://t2-inf-1407-frontend.vercel.app",
+    "http://localhost:5173",   # para testes locais
+]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
