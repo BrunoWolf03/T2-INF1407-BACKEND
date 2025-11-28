@@ -2,6 +2,7 @@
 Main URL Configuration for NBA Fantasy Game
 """
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.urls import path, include
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -10,6 +11,7 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
+    path('', lambda request: redirect('/swagger/')),
     # Admin panel
     path('admin/', admin.site.urls),
 
