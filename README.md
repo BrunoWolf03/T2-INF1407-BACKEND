@@ -1,5 +1,7 @@
 # INF1407 — ProgWeb
 
+https://trucsite.pythonanywhere.com/swagger/
+
 Trabalho Final — NBA Fantasy Game Backend
 
 Bruno Wolf - 2212576
